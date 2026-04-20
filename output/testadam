@@ -1,0 +1,77 @@
+python example.py
+modules: ['lorahub/flan_t5_large-glue_mrpc', 'lorahub/flan_t5_large-dream_baseline', 'lorahub/flan_t5_large-ropes_given_background_situation', 'lorahub/flan_t5_large-quarel_logic_test', 'lorahub/flan_t5_large-anli_r1', 'lorahub/flan_t5_large-imdb_reviews_plain_text', 'lorahub/flan_t5_large-race_high_Is_this_the_right_answer', 'lorahub/flan_t5_large-ropes_plain_no_background', 'lorahub/flan_t5_large-duorc_SelfRC_movie_director', 'lorahub/flan_t5_large-quail_context_question_description_answer_text', 'lorahub/flan_t5_large-kilt_tasks_hotpotqa_final_exam', 'lorahub/flan_t5_large-quartz_read_passage_below_choose', 'lorahub/flan_t5_large-wiki_hop_original_generate_subject_and_object', 'lorahub/flan_t5_large-wiki_hop_original_choose_best_object_interrogative_2', 'lorahub/flan_t5_large-wiki_qa_exercise', 'lorahub/flan_t5_large-wiki_hop_original_choose_best_object_affirmative_3', 'lorahub/flan_t5_large-duorc_SelfRC_title_generation', 'lorahub/flan_t5_large-true_case', 'lorahub/flan_t5_large-adversarial_qa_dbert_question_context_answer', 'lorahub/flan_t5_large-super_glue_wsc.fixed']
+> Begin to load lora modules
+  0%|                                                                                | 0/20 [00:00<?, ?it/s]> Loading lorahub/flan_t5_large-glue_mrpc ...
+  5%|███▌                                                                    | 1/20 [00:03<01:15,  3.97s/it]> Loading lorahub/flan_t5_large-dream_baseline ...
+ 10%|███████▏                                                                | 2/20 [00:08<01:16,  4.26s/it]> Loading lorahub/flan_t5_large-ropes_given_background_situation ...
+ 15%|██████████▊                                                             | 3/20 [00:12<01:12,  4.26s/it]> Loading lorahub/flan_t5_large-quarel_logic_test ...
+ 20%|██████████████▍                                                         | 4/20 [00:16<01:07,  4.22s/it]> Loading lorahub/flan_t5_large-anli_r1 ...
+ 25%|██████████████████                                                      | 5/20 [00:21<01:05,  4.38s/it]> Loading lorahub/flan_t5_large-imdb_reviews_plain_text ...
+ 30%|█████████████████████▌                                                  | 6/20 [00:26<01:02,  4.46s/it]> Loading lorahub/flan_t5_large-race_high_Is_this_the_right_answer ...
+ 35%|█████████████████████████▏                                              | 7/20 [00:30<00:57,  4.45s/it]> Loading lorahub/flan_t5_large-ropes_plain_no_background ...
+ 40%|████████████████████████████▊                                           | 8/20 [00:37<01:02,  5.24s/it]> Loading lorahub/flan_t5_large-duorc_SelfRC_movie_director ...
+ 45%|████████████████████████████████▍                                       | 9/20 [00:41<00:54,  4.97s/it]> Loading lorahub/flan_t5_large-quail_context_question_description_answer_text ...
+ 50%|███████████████████████████████████▌                                   | 10/20 [00:45<00:47,  4.71s/it]> Loading lorahub/flan_t5_large-kilt_tasks_hotpotqa_final_exam ...
+ 55%|███████████████████████████████████████                                | 11/20 [00:50<00:42,  4.69s/it]> Loading lorahub/flan_t5_large-quartz_read_passage_below_choose ...
+ 60%|██████████████████████████████████████████▌                            | 12/20 [00:54<00:36,  4.59s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_generate_subject_and_object ...
+ 65%|██████████████████████████████████████████████▏                        | 13/20 [00:59<00:32,  4.70s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_choose_best_object_interrogative_2 ...
+ 70%|█████████████████████████████████████████████████▋                     | 14/20 [01:04<00:27,  4.54s/it]> Loading lorahub/flan_t5_large-wiki_qa_exercise ...
+ 75%|█████████████████████████████████████████████████████▎                 | 15/20 [01:08<00:22,  4.55s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_choose_best_object_affirmative_3 ...
+ 80%|████████████████████████████████████████████████████████▊              | 16/20 [01:16<00:21,  5.42s/it]> Loading lorahub/flan_t5_large-duorc_SelfRC_title_generation ...
+ 85%|████████████████████████████████████████████████████████████▎          | 17/20 [01:21<00:16,  5.36s/it]> Loading lorahub/flan_t5_large-true_case ...
+ 90%|███████████████████████████████████████████████████████████████▉       | 18/20 [01:25<00:10,  5.11s/it]> Loading lorahub/flan_t5_large-adversarial_qa_dbert_question_context_answer ...
+ 95%|███████████████████████████████████████████████████████████████████▍   | 19/20 [01:30<00:04,  4.88s/it]> Loading lorahub/flan_t5_large-super_glue_wsc.fixed ...
+100%|███████████████████████████████████████████████████████████████████████| 20/20 [01:34<00:00,  4.73s/it]
+Running tokenizer on dataset: 100%|███████████████████████████████████| 5/5 [00:00<00:00, 281.99 examples/s]
+> Begin to perform gradient-free optimization ...
+Passing a tuple of `past_key_values` is deprecated and will be removed in Transformers v4.48.0. You should pass an instance of `EncoderDecoderCache` instead, e.g. `past_key_values=EncoderDecoderCache.from_legacy_cache(past_key_values)`.
+[ZO-Adam] step=1, loss=0.114466
+[ZO-Adam] step=2, loss=0.113235
+[ZO-Adam] step=3, loss=0.114998
+[ZO-Adam] step=4, loss=0.115689
+[ZO-Adam] step=5, loss=0.113767
+[ZO-Adam] step=6, loss=0.110816
+[ZO-Adam] step=7, loss=0.109345
+[ZO-Adam] step=8, loss=0.109261
+[ZO-Adam] step=9, loss=0.109128
+[ZO-Adam] step=10, loss=0.108198
+[ZO-Adam] step=11, loss=0.106789
+[ZO-Adam] step=12, loss=0.104368
+[ZO-Adam] step=13, loss=0.101871
+[ZO-Adam] step=14, loss=0.098483
+[ZO-Adam] step=15, loss=0.094347
+[ZO-Adam] step=16, loss=0.088436
+[ZO-Adam] step=17, loss=0.081963
+[ZO-Adam] step=18, loss=0.076437
+[ZO-Adam] step=19, loss=0.074947
+[ZO-Adam] step=20, loss=0.072939
+[ZO-Adam] step=21, loss=0.070190
+[ZO-Adam] step=22, loss=0.068399
+[ZO-Adam] step=23, loss=0.067023
+[ZO-Adam] step=24, loss=0.066369
+[ZO-Adam] step=25, loss=0.065848
+[ZO-Adam] step=26, loss=0.065652
+[ZO-Adam] step=27, loss=0.066525
+[ZO-Adam] step=28, loss=0.065372
+[ZO-Adam] step=29, loss=0.065902
+[ZO-Adam] step=30, loss=0.066691
+[ZO-Adam] step=31, loss=0.067506
+[ZO-Adam] step=32, loss=0.068354
+[ZO-Adam] step=33, loss=0.068627
+[ZO-Adam] step=34, loss=0.068501
+[ZO-Adam] step=35, loss=0.068017
+[ZO-Adam] step=36, loss=0.067454
+[ZO-Adam] step=37, loss=0.067005
+[ZO-Adam] step=38, loss=0.066263
+[ZO-Adam] step=39, loss=0.065611
+[ZO-Adam] step=40, loss=0.064948
+[ori] final loss=0.06494816194949993
+module_weights: [ 0.3754361  -1.10615871  0.58322938 -0.17961652 -0.19893239 -0.86732823
+ -0.62522932  0.24504159  0.16238017 -1.37183461  0.05759129 -0.24230989
+ -0.04227286 -0.30031339 -0.92376779 -0.05531335  0.33272811  0.62933282
+  0.3210985  -0.72698001]
+Running tokenizer on dataset: 100%|█████████████████████████████| 150/150 [00:00<00:00, 10082.14 examples/s]
+/home/purein/anaconda3/envs/lorahub_test/lib/python3.8/site-packages/transformers/tokenization_utils_base.py:2852: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
+  warnings.warn(
+example_predictions: ['(F)', '(E)', '(D)', '(F)', '(F)', '(E)', '(A)', '(B)', '(B)', '(A)', '(F)', '(E)', '(E)', '(E)', '(F)', '(F)', '(F)', '(F)', '(D)', '(C)', '(D)', '(E)', '(E)', '(E)', '(F)', '(E)', '(F)', '(A)', '(D)', '(C)', '(E)', '(B)', '(D)', '(E)', '(C)', '(A)', '(A)', '(F)', '(F)', '(C)', '(F)', '(C)', '(B)', '(D)', '(C)', '(E)', '(B)', '(F)', '(D)', '(E)', '(E)', '(A)', '(D)', '(F)', '(F)', '(F)', '(F)', '(F)', '(F)', '(F)', '(E)', '(E)', '(A)', '(A)', '(D)', '(A)', '(F)', '(A)', '(F)', '(E)', '(C)', '(A)', '(C)', '(C)', '(A)', '(E)', '(F)', '(F)', '(F)', '(E)', '(F)', '(F)', '(F)', '(B)', '(F)', '(D)', '(D)', '(A)', '(D)', '(A)', '(D)', '(E)', '(D)', '(D)', '(C)', '(B)', '(E)', '(F)', '(A)', '(E)', '(A)', '(D)', '(E)', '(D)', '(B)', '(D)', '(F)', '(F)', '(D)', '(F)', '(E)', '(A)', '(A)', '(C)', '(B)', '(E)', '(E)', '(D)', '(F)', '(A)', '(C)', '(D)', '(D)', '(F)', '(E)', '(A)', '(E)', '(A)', '(F)', '(D)', '(F)', '(B)', '(B)', '(C)', '(D)', '(D)', '(B)', '(C)', '(F)', '(C)', '(D)', '(A)', '(D)', '(E)', '(D)', '(F)', '(E)', '(E)', '(E)', '(F)']
+task accuracy: 48.66666666666667

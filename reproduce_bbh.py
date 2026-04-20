@@ -107,9 +107,13 @@ def evaluate_lorahub_results_few_shot(folder, flan_model_name):
 if __name__ == "__main__":
     if not os.path.exists("data_bbh"):
         # download dataset
-        os.system("wget https://github.com/sail-sg/lorahub/releases/download/0.1/data_bbh.zip")
+        # os.system("wget https://github.com/sail-sg/lorahub/releases/download/0.1/data_bbh.zip")
+        import zipfile
+
+        with zipfile.ZipFile("data_bbh.zip", 'r') as zip_ref:
+            zip_ref.extractall("data_bbh")
         # unzip
-        os.system("unzip data_bbh.zip")
+        # os.system("unzip data_bbh.zip")
     # evaluate the model
     evaluate_flan_results_zero_shot("data_bbh", "google/flan-t5-large")
     # five shot for flan models

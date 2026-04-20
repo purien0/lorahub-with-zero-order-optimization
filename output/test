@@ -1,0 +1,139 @@
+steps=100, eps=0.05, lr=1, q=10
+python example.py
+modules: ['lorahub/flan_t5_large-glue_mrpc', 'lorahub/flan_t5_large-dream_baseline', 'lorahub/flan_t5_large-ropes_given_background_situation', 'lorahub/flan_t5_large-quarel_logic_test', 'lorahub/flan_t5_large-anli_r1', 'lorahub/flan_t5_large-imdb_reviews_plain_text', 'lorahub/flan_t5_large-race_high_Is_this_the_right_answer', 'lorahub/flan_t5_large-ropes_plain_no_background', 'lorahub/flan_t5_large-duorc_SelfRC_movie_director', 'lorahub/flan_t5_large-quail_context_question_description_answer_text', 'lorahub/flan_t5_large-kilt_tasks_hotpotqa_final_exam', 'lorahub/flan_t5_large-quartz_read_passage_below_choose', 'lorahub/flan_t5_large-wiki_hop_original_generate_subject_and_object', 'lorahub/flan_t5_large-wiki_hop_original_choose_best_object_interrogative_2', 'lorahub/flan_t5_large-wiki_qa_exercise', 'lorahub/flan_t5_large-wiki_hop_original_choose_best_object_affirmative_3', 'lorahub/flan_t5_large-duorc_SelfRC_title_generation', 'lorahub/flan_t5_large-true_case', 'lorahub/flan_t5_large-adversarial_qa_dbert_question_context_answer', 'lorahub/flan_t5_large-super_glue_wsc.fixed']
+> Begin to load lora modules
+  0%|                                                                                | 0/20 [00:00<?, ?it/s]> Loading lorahub/flan_t5_large-glue_mrpc ...
+  5%|███▌                                                                    | 1/20 [00:03<01:03,  3.33s/it]> Loading lorahub/flan_t5_large-dream_baseline ...
+ 10%|███████▏                                                                | 2/20 [00:06<00:59,  3.30s/it]> Loading lorahub/flan_t5_large-ropes_given_background_situation ...
+ 15%|██████████▊                        +                                     | 3/20 [00:12<01:19,  4.67s/it]> Loading lorahub/flan_t5_large-quarel_logic_test ...
+ 20%|██████████████▍                                                         | 4/20 [00:16<01:06,  4.17s/it]> Loading lorahub/flan_t5_large-anli_r1 ...
+ 25%|██████████████████                                                      | 5/20 [00:19<00:57,  3.85s/it]> Loading lorahub/flan_t5_large-imdb_reviews_plain_text ...
+ 30%|█████████████████████▌                                                  | 6/20 [00:22<00:50,  3.63s/it]> Loading lorahub/flan_t5_large-race_high_Is_this_the_right_answer ...
+ 35%|█████████████████████████▏                                              | 7/20 [00:25<00:45,  3.48s/it]> Loading lorahub/flan_t5_large-ropes_plain_no_background ...
+ 40%|████████████████████████████▊                                           | 8/20 [00:29<00:41,  3.44s/it]> Loading lorahub/flan_t5_large-duorc_SelfRC_movie_director ...
+ 45%|████████████████████████████████▍                                       | 9/20 [00:32<00:36,  3.32s/it]> Loading lorahub/flan_t5_large-quail_context_question_description_answer_text ...
+ 50%|███████████████████████████████████▌                                   | 10/20 [00:35<00:31,  3.19s/it]> Loading lorahub/flan_t5_large-kilt_tasks_hotpotqa_final_exam ...
+ 55%|███████████████████████████████████████                                | 11/20 [00:38<00:27,  3.09s/it]> Loading lorahub/flan_t5_large-quartz_read_passage_below_choose ...
+ 60%|██████████████████████████████████████████▌                            | 12/20 [00:41<00:24,  3.07s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_generate_subject_and_object ...
+ 65%|██████████████████████████████████████████████▏                        | 13/20 [00:46<00:27,  3.88s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_choose_best_object_interrogative_2 ...
+ 70%|█████████████████████████████████████████████████▋                     | 14/20 [00:50<00:22,  3.77s/it]> Loading lorahub/flan_t5_large-wiki_qa_exercise ...
+ 75%|█████████████████████████████████████████████████████▎                 | 15/20 [00:53<00:18,  3.65s/it]> Loading lorahub/flan_t5_large-wiki_hop_original_choose_best_object_affirmative_3 ...
+ 80%|████████████████████████████████████████████████████████▊              | 16/20 [00:56<00:13,  3.49s/it]> Loading lorahub/flan_t5_large-duorc_SelfRC_title_generation ...
+ 85%|████████████████████████████████████████████████████████████▎          | 17/20 [01:00<00:10,  3.43s/it]> Loading lorahub/flan_t5_large-true_case ...
+ 90%|███████████████████████████████████████████████████████████████▉       | 18/20 [01:03<00:06,  3.29s/it]> Loading lorahub/flan_t5_large-adversarial_qa_dbert_question_context_answer ...
+ 95%|███████████████████████████████████████████████████████████████████▍   | 19/20 [01:06<00:03,  3.25s/it]> Loading lorahub/flan_t5_large-super_glue_wsc.fixed ...
+100%|███████████████████████████████████████████████████████████████████████| 20/20 [01:09<00:00,  3.48s/it]
+Running tokenizer on dataset: 100%|███████████████████████████████████| 5/5 [00:00<00:00, 743.75 examples/s]
+> Begin to perform gradient-free optimization ...
+Passing a tuple of `past_key_values` is deprecated and will be removed in Transformers v4.48.0. You should pass an instance of `EncoderDecoderCache` instead, e.g. `past_key_values=EncoderDecoderCache.from_legacy_cache(past_key_values)`.
+[ZO] step=0, loss=0.12491160656992156
+[ZO] step=1, loss=0.12429214661836302
+[ZO] step=2, loss=0.12326817594549634
+[ZO] step=3, loss=0.12183183203712603
+[ZO] step=4, loss=0.12005439080221768
+[ZO] step=5, loss=0.11814400114423063
+[ZO] step=6, loss=0.11642859657731183
+[ZO] step=7, loss=0.114945597512757
+[ZO] step=8, loss=0.11381727893616905
+[ZO] step=9, loss=0.11303463065308503
+[ZO] step=10, loss=0.11259542531745736
+[ZO] step=11, loss=0.11239031387711074
+[ZO] step=12, loss=0.11231634152191704
+[ZO] step=13, loss=0.11216126558451044
+[ZO] step=14, loss=0.1119582548816562
+[ZO] step=15, loss=0.11156368001765062
+[ZO] step=16, loss=0.11095392720909672
+[ZO] step=17, loss=0.1102810970755286
+[ZO] step=18, loss=0.10962243525365091
+[ZO] step=19, loss=0.10892581077568611
+[ZO] step=20, loss=0.10827581951713913
+[ZO] step=21, loss=0.1076435231361148
+[ZO] step=22, loss=0.1070047604713644
+[ZO] step=23, loss=0.10637344215656182
+[ZO] step=24, loss=0.10576486437685623
+[ZO] step=25, loss=0.10512923433251292
+[ZO] step=26, loss=0.10440664850257438
+[ZO] step=27, loss=0.1038648008341777
+[ZO] step=28, loss=0.10329260410662744
+[ZO] step=29, loss=0.10273215254864572
+[ZO] step=30, loss=0.10218675479707678
+[ZO] step=31, loss=0.10168970936318239
+[ZO] step=32, loss=0.10115724329888909
+[ZO] step=33, loss=0.1006499948251685
+[ZO] step=34, loss=0.10013404870854548
+[ZO] step=35, loss=0.09962028805162178
+[ZO] step=36, loss=0.09909568015286443
+[ZO] step=37, loss=0.09856254286896673
+[ZO] step=38, loss=0.09808336428413081
+[ZO] step=39, loss=0.09761482232297429
+[ZO] step=40, loss=0.09711711314171717
+[ZO] step=41, loss=0.09661950363166716
+[ZO] step=42, loss=0.09609522285687613
+[ZO] step=43, loss=0.09554491664128562
+[ZO] step=44, loss=0.09497328366368184
+[ZO] step=45, loss=0.09438141142726987
+[ZO] step=46, loss=0.09376545886402109
+[ZO] step=47, loss=0.0931159339556165
+[ZO] step=48, loss=0.09245758914941049
+[ZO] step=49, loss=0.09173389360298098
+[ZO] step=50, loss=0.09087302700144496
+[ZO] step=51, loss=0.08999051579439951
+[ZO] step=52, loss=0.08911625179131641
+[ZO] step=53, loss=0.08814714200521366
+[ZO] step=54, loss=0.08705990816122715
+[ZO] step=55, loss=0.08591981112046942
+[ZO] step=56, loss=0.08464227470000829
+[ZO] step=57, loss=0.0831393789507184
+[ZO] step=58, loss=0.08158629383556767
+[ZO] step=59, loss=0.08008869218883131
+[ZO] step=60, loss=0.07845060405353757
+[ZO] step=61, loss=0.07674730605168385
+[ZO] step=62, loss=0.07487578176509099
+[ZO] step=63, loss=0.07293267186606808
+[ZO] step=64, loss=0.0709103041247117
+[ZO] step=65, loss=0.06872736627205597
+[ZO] step=66, loss=0.06642790252432067
+[ZO] step=67, loss=0.06445274157065942
+[ZO] step=68, loss=0.0630301722756939
+[ZO] step=69, loss=0.062354596273792195
+[ZO] step=70, loss=0.06216949314610236
+[ZO] step=71, loss=0.061728485693927374
+[ZO] step=72, loss=0.06179765761107785
+[ZO] step=73, loss=0.06199965735506673
+[ZO] step=74, loss=0.06202450255207327
+[ZO] step=75, loss=0.061287002819694555
+[ZO] step=76, loss=0.06038803799175266
+[ZO] step=77, loss=0.05907107413857364
+[ZO] step=78, loss=0.05777200977639006
+[ZO] step=79, loss=0.05648397731881556
+[ZO] step=80, loss=0.055140951843114835
+[ZO] step=81, loss=0.053963121645573715
+[ZO] step=82, loss=0.052901345291911886
+[ZO] step=83, loss=0.05200997629404073
+[ZO] step=84, loss=0.051163455059631595
+[ZO] step=85, loss=0.050402236442294995
+[ZO] step=86, loss=0.04964469702404521
+[ZO] step=87, loss=0.0490179938114383
+[ZO] step=88, loss=0.04854679921416965
+[ZO] step=89, loss=0.04811162207364307
+[ZO] step=90, loss=0.04774250873248782
+[ZO] step=91, loss=0.04735543490449085
+[ZO] step=92, loss=0.04704003882558694
+[ZO] step=93, loss=0.046719115688285996
+[ZO] step=94, loss=0.04636959323119803
+[ZO] step=95, loss=0.04600680427982841
+[ZO] step=96, loss=0.045674487169625466
+[ZO] step=97, loss=0.04535376880892358
+[ZO] step=98, loss=0.045071879327492806
+[ZO] step=99, loss=0.04481709329528759
+[ori] final loss=0.04481709329528759
+module_weights: [-5.24327533e-02 -9.13001460e-01 -2.08146838e-01 -2.89537186e-01
+ -3.87920642e-02 -4.13882003e-01 -1.20533820e+00  1.87418054e-02
+ -2.22861254e-01 -1.06174837e+00  3.63975039e-02 -1.69408634e-01
+ -1.34367004e-02 -6.06228116e-04 -3.02646876e-01 -4.09067239e-02
+ -3.82582356e-02  1.81685295e-01 -9.24339157e-02 -3.31223049e-01]
+Running tokenizer on dataset: 100%|██████████████████████████████| 150/150 [00:00<00:00, 7952.29 examples/s]
+/home/purein/anaconda3/envs/lorahub_test/lib/python3.8/site-packages/transformers/tokenization_utils_base.py:2852: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
+  warnings.warn(
+example_predictions: ['(F)', '(C)', '(D)', '(F)', '(F)', '(E)', '(D)', '(D)', '(B)', '(F)', '(F)', '(E)', '(E)', '(E)', '(F)', '(F)', '(F)', '(F)', '(D)', '(F)', '(F)', '(E)', '(F)', '(E)', '(F)', '(E)', '(F)', '(F)', '(D)', '(C)', '(E)', '(B)', '(F)', '(F)', '(C)', '(A)', '(A)', '(F)', '(F)', '(C)', '(F)', '(A)', '(E)', '(D)', '(C)', '(E)', '(B)', '(F)', '(D)', '(E)', '(E)', '(E)', '(D)', '(F)', '(F)', '(F)', '(F)', '(F)', '(F)', '(F)', '(E)', '(E)', '(A)', '(A)', '(E)', '(A)', '(F)', '(A)', '(F)', '(E)', '(C)', '(A)', '(C)', '(C)', '(A)', '(F)', '(E)', '(F)', '(F)', '(F)', '(F)', '(F)', '(F)', '(E)', '(F)', '(D)', '(E)', '(A)', '(D)', '(A)', '(D)', '(F)', '(C)', '(F)', '(C) 09/09/1909', '(B)', '(E)', '(F)', '(A)', '(F)', '(A)', '(D)', '(E)', '(D)', '(F)', '(B)', '(F)', '(F)', '(D)', '(F)', '(E)', '(A)', '(A)', '(C)', '(B)', '(E)', '(E)', '(D)', '(F)', '(A)', '(E)', '(D)', '(D)', '(F)', '(C)', '(A)', '(E)', '(A)', '(F)', '(D)', '(F)', '(B)', '(F)', '(C)', '(D)', '(D)', '(B)', '(C)', '(F)', '(D)', '(D)', '(E)', '(E)', '(E)', '(D)', '(F)', '(E)', '(E)', '(E)', '(F)']
+task accuracy: 46.666666666666664

@@ -1,4 +1,4 @@
-from lorahub.algorithm import lorahub_learning, lorahub_inference
+from lorahub.algorithm import lorahub_learning, lorahub_inference,lorahub_zolearning
 from lorahub.constant import LORA_MODULE_NAMES
 import random
 
@@ -186,8 +186,28 @@ def get_lora_module_list():
     random.seed(42)
     return random.sample(LORA_MODULE_NAMES, 20)
 
+import argparse
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--method", type=str, required=True,
+                        choices=["baseline", "momentum","adam"])
+    parser.add_argument("--eps", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--q", type=int, default=5)
+    parser.add_argument("--steps", type=int, default=40)
+    parser.add_argument("--beta", type=float, default=0.9)
+    parser.add_argument("--beta1", type=float, default=0.9)
+    parser.add_argument("--beta2", type=float, default=0.999)
+    parser.add_argument("--adam_eps", type=float, default=1e-8)
+    parser.add_argument("--init_scale", type=float, default=0.1)
+    parser.add_argument("--clip_value", type=float, default=1.5)
+    args = parser.parse_args()
+    print("="*30)
+    print("Experiment Config:")
+    for k, v in vars(args).items():
+        print(f"{k}: {v}")
+    print("="*30)
     """
     Perform lorahub learning
     """
@@ -201,13 +221,23 @@ def main():
         example_inputs.append(example["input"])
         examples_outputs.append(example["output"])
 
-    # perform LoRAHub learning
-    module_weights, model, tokenizer = lorahub_learning(lora_module_list=modules,
+    # perform LoRAHub learning or zolearning
+    print(f"[DEBUG] method = '{args.method}'")
+    print(f"[DEBUG] repr = {repr(args.method)}")
+    if args.method =="baseline":
+        module_weights, model, tokenizer = lorahub_learning(lora_module_list=modules,
                                                         example_inputs=example_inputs,
                                                         example_outputs=examples_outputs,
-                                                        max_inference_step=40,
+                                                        max_inference_step=args.steps,
                                                         batch_size=5)
-
+    else:
+        module_weights, model, tokenizer = lorahub_zolearning(lora_module_list=modules,
+                                                        example_inputs=example_inputs,
+                                                        example_outputs=examples_outputs,
+                                                        max_inference_step=args.steps,
+                                                        batch_size=5,
+                                                        args=args)
+    
     print("module_weights:", module_weights)
 
     """
