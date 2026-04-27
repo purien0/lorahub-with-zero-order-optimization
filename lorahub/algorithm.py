@@ -15,7 +15,45 @@ from functools import partial
 from typing import List, Optional, Union
 import copy
 
+def init_global_model_and_lora(lora_module_list = None, model_name = None):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    print("🔵 Loading base model...")
+    if model_name is None:
+        if lora_module_list is None:
+            raise Exception(f"parameter error")
+        default_peft_model_id = lora_module_list[0]
+        model_name = PeftConfig.from_pretrained(
+        default_peft_model_id).base_model_name_or_path
+    base_model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
+    model = base_model
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    lora_cache = {}
+    if lora_module_list is not None:
+        print("🔵 Loading LoRA modules into cache...")
+
+        for lora in lora_module_list:
+            print(f"Loading {lora}")
+            peft_model = PeftModel.from_pretrained(base_model, lora)
+            lora_cache[lora] = get_peft_model_state_dict(peft_model)
+
+        # 初始化一个带 LoRA 结构的模型（只用第一个）
+        model = PeftModel.from_pretrained(base_model, lora_module_list[0]).to(device)
+        model.eval()
+
+    return model, tokenizer, lora_cache
+def get_lora_cache(lora_module_list,base_model):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    lora_cache = {}
+    for lora in lora_module_list:
+            print(f"Loading {lora}")
+            peft_model = PeftModel.from_pretrained(base_model, lora)
+            lora_cache[lora] = get_peft_model_state_dict(peft_model)
+
+            # 初始化一个带 LoRA 结构的模型（只用第一个）
+    model = PeftModel.from_pretrained(base_model, lora_module_list[0]).to(device)
+    model.eval()
+    return model,lora_cache
 def load_base_model_and_lora_modules(
     lora_module_list: List[str], model_name_or_path: Optional[str] = None
 ):
@@ -198,6 +236,60 @@ def get_final_weights(weights, lora_module_list, cache):
     return final_state_dict
 
 
+# def lorahub_inference(
+#     example_inputs: List[str],
+#     model_or_name_path: Union[AutoModelForSeq2SeqLM, str],
+#     tokenizer_or_tokenizer_path: Union[AutoTokenizer, str],
+#     batch_size: int,
+#     example_outputs: List[str] = None,
+# ):
+#     def accuracy_score(outputs, ground_truths):
+#         correct = 0
+#         total = 0
+#         for output, truth in zip(outputs, ground_truths):
+#             if (
+#                 output.strip().lower().replace(".", "")
+#                 == truth.strip().lower().replace(".", "")
+#             ):
+#                 correct += 1
+#             total += 1
+#         return correct / total * 100
+
+#     example_predictions = []
+#     # load model
+#     if isinstance(model_or_name_path, str):
+#         model = AutoModelForSeq2SeqLM.from_pretrained(model_or_name_path)
+#     else:
+#         model = model_or_name_path
+
+#     if isinstance(tokenizer_or_tokenizer_path, str):
+#         tokenizer = AutoTokenizer.from_pretrained(tokenizer_or_tokenizer_path)
+#     else:
+#         tokenizer = tokenizer_or_tokenizer_path
+
+#     dataset = load_dataset(example_inputs, example_outputs, tokenizer)
+#     # use gpu if available
+#     device = "cuda" if torch.cuda.is_available() else "cpu"
+#     model = model.to(device)
+
+#     for i in range(0, len(dataset["input"]), batch_size):
+#         inputs = tokenizer(
+#             dataset["input"][i : i + batch_size],
+#             max_length=2048,
+#             return_tensors="pt",
+#             padding=True,
+#         ).to(device)
+#         outputs = model.generate(input_ids=inputs["input_ids"], max_new_tokens=256)
+#         outputs = tokenizer.batch_decode(outputs.to("cpu"), skip_special_tokens=True)
+#         example_predictions.extend(outputs)
+
+#     if example_outputs is not None:
+#         task_perf = accuracy_score(example_predictions, example_outputs)
+#     else:
+#         task_perf = None
+
+#     return example_predictions, task_perf
+
 def lorahub_inference(
     example_inputs: List[str],
     model_or_name_path: Union[AutoModelForSeq2SeqLM, str],
@@ -237,12 +329,14 @@ def lorahub_inference(
     for i in range(0, len(dataset["input"]), batch_size):
         inputs = tokenizer(
             dataset["input"][i : i + batch_size],
-            max_length=2048,
+            max_length=256,
             return_tensors="pt",
+            truncation=True,
             padding=True,
         ).to(device)
-        outputs = model.generate(input_ids=inputs["input_ids"], max_new_tokens=256)
-        outputs = tokenizer.batch_decode(outputs.to("cpu"), skip_special_tokens=True)
+        with torch.no_grad():
+            outputs = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],max_new_tokens=32)
+        outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
         example_predictions.extend(outputs)
 
     if example_outputs is not None:
@@ -251,7 +345,6 @@ def lorahub_inference(
         task_perf = None
 
     return example_predictions, task_perf
-
 
 def lorahub_learning(
     lora_module_list: List[str],
@@ -263,6 +356,7 @@ def lorahub_learning(
     get_loss=default_get_loss,
     get_regular=default_l1_regularization,
     seed=42,
+    model = None, tokenizer = None, cache = None
 ):
     random.seed(seed)
     numpy.random.seed(seed)
@@ -271,8 +365,8 @@ def lorahub_learning(
     if number_of_loras == 0:
         print("> No LoRA modules are provided. Please provide at least one LoRA module.")
         return None, None
-
-    model, tokenizer, cache = load_base_model_and_lora_modules(
+    if model is None:
+        model, tokenizer, cache = load_base_model_and_lora_modules(
         lora_module_list, model_name_or_path
     )
     dataset = load_dataset(example_inputs, example_outputs, tokenizer)
@@ -298,7 +392,8 @@ def lorahub_learning(
     final_lora = get_final_weights(recommendation.value, lora_module_list, cache)
     print(f"[ori] final loss={get_score_partial(recommendation.value)}")
     set_peft_model_state_dict(model, final_lora)
-    model = model.merge_and_unload()
+    # no merge for the 
+    # model = model.merge_and_unload()  
     return recommendation.value, model, tokenizer
 
 
@@ -435,7 +530,7 @@ def lorahub_zolearning(
     get_regular=default_l1_regularization,
     seed=42,
     args=None,
-    method="base",
+    method="base",model = None, tokenizer = None, cache = None
 ):
     if args is not None:
         method = args.method
@@ -447,8 +542,8 @@ def lorahub_zolearning(
     if number_of_loras == 0:
         print("> No LoRA modules are provided. Please provide at least one LoRA module.")
         return None, None
-
-    model, tokenizer, cache = load_base_model_and_lora_modules(
+    if model is None:
+        model, tokenizer, cache = load_base_model_and_lora_modules(
         lora_module_list, model_name_or_path
     )
     dataset = load_dataset(example_inputs, example_outputs, tokenizer)
@@ -486,5 +581,5 @@ def lorahub_zolearning(
     print(f"[ori] final loss={get_score_partial(weights)}")
     final_lora = get_final_weights(weights, lora_module_list, cache)
     set_peft_model_state_dict(model, final_lora)
-    model = model.merge_and_unload()
+    # model = model.merge_and_unload()
     return weights, model, tokenizer

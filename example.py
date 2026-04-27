@@ -1,4 +1,4 @@
-from lorahub.algorithm import lorahub_learning, lorahub_inference,lorahub_zolearning
+from lorahub.algorithm import lorahub_learning, lorahub_inference,lorahub_zolearning,init_global_model_and_lora
 from lorahub.constant import LORA_MODULE_NAMES
 import random
 
@@ -224,19 +224,20 @@ def main():
     # perform LoRAHub learning or zolearning
     print(f"[DEBUG] method = '{args.method}'")
     print(f"[DEBUG] repr = {repr(args.method)}")
+    model, tokenizer , cache = init_global_model_and_lora(modules)
     if args.method =="baseline":
         module_weights, model, tokenizer = lorahub_learning(lora_module_list=modules,
                                                         example_inputs=example_inputs,
                                                         example_outputs=examples_outputs,
                                                         max_inference_step=args.steps,
-                                                        batch_size=5)
+                                                        batch_size=5,model = model, tokenizer = tokenizer, cache = cache)
     else:
         module_weights, model, tokenizer = lorahub_zolearning(lora_module_list=modules,
                                                         example_inputs=example_inputs,
                                                         example_outputs=examples_outputs,
                                                         max_inference_step=args.steps,
                                                         batch_size=5,
-                                                        args=args)
+                                                        args=args,model = model, tokenizer = tokenizer, cache = cache)
     
     print("module_weights:", module_weights)
 

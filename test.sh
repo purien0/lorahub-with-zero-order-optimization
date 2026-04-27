@@ -12,6 +12,38 @@ run_experiment() {
   python example.py "$@" | tee "output/${name}.log"
 }
 
-#run_experiment baseline --method baseline --steps 40
-run_experiment momentum_default --method momentum --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta 0.9
-run_experiment adam_default --method adam --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta1 0.9 --beta2 0.999 --adam_eps 1e-8
+# run_experiment baseline --method baseline --steps 40
+# run_experiment momentum_default --method momentum --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta 0.9
+# run_experiment adam_default --method adam --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta1 0.9 --beta2 0.999 --adam_eps 1e-8
+
+EPS_LIST=(0.01 0.05 0.1)
+LR_LIST=(0.05 0.1 0.2)
+Q_LIST=(3 5 10)
+
+STEPS=40
+METHOD="adam"
+
+# ====== 网格搜索 ======
+
+for eps in "${EPS_LIST[@]}"; do
+  for lr in "${LR_LIST[@]}"; do
+    for q in "${Q_LIST[@]}"; do
+
+      name="adam_eps${eps}_lr${lr}_q${q}"
+
+      run_experiment "$name" \
+        --method ${METHOD} \
+        --steps ${STEPS} \
+        --eps ${eps} \
+        --lr ${lr} \
+        --q ${q} \
+        --beta1 0.9 \
+        --beta2 0.999 \
+        --adam_eps 1e-8
+
+    done
+  done
+done
+
+echo "===== BEST RESULT ====="
+grep "task accuracy" output/*.log | sort -t ':' -k2 -nr | head -n 5
