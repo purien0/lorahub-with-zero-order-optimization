@@ -6,10 +6,14 @@ from lorahub.constant import LORA_MODULE_NAMES
 import random
 from random import shuffle
 import argparse
+import copy
+import numpy as np
+import torch
 
 def evaluate_flan_results_zero_shot(folder, flan_model_name):
     sub_dirs = os.listdir(folder)
     flan_model, flan_tokenizer , _ = init_global_model_and_lora(model_name = flan_model_name)
+    
     for sub_dir in sub_dirs:
         test_file_path = os.path.join(folder, sub_dir, "zero_shot.jsonl")
         task_inputs, task_outputs = [], []
@@ -18,11 +22,12 @@ def evaluate_flan_results_zero_shot(folder, flan_model_name):
             task_inputs.append(example["context"])
             task_outputs.append(example["completion"])
         print("Evaluating on task (zero shot): ", sub_dir)
-        lorahub_inference(task_inputs,
+        _,task_acc = lorahub_inference(task_inputs,
                           flan_model,
                           flan_tokenizer,
                           16,
                           task_outputs)
+        print("average perf:", task_acc)
 
 
 def evaluate_flan_results_few_shot(folder, flan_model_name):
@@ -36,11 +41,12 @@ def evaluate_flan_results_few_shot(folder, flan_model_name):
             task_inputs.append(example["context"])
             task_outputs.append(example["completion"])
         print("Evaluating on task (five shot): ", sub_dir)
-        lorahub_inference(task_inputs,
+        _,task_acc = lorahub_inference(task_inputs,
                           flan_model,
                           flan_tokenizer,
                           16,
                           task_outputs)
+        print("average perf:", task_acc)
 
 
 def evaluate_lorahub_results_few_shot(folder, flan_model_name):
@@ -80,14 +86,14 @@ def evaluate_lorahub_results_few_shot(folder, flan_model_name):
                 return random.sample(LORA_MODULE_NAMES, 20)
             # get a list of modules to be used in the composition
             lora_module_list = get_lora_module_list()
-            model,lora_cache = get_lora_cache(lora_module_list,base_model)
+            model, lora_cache = get_lora_cache(lora_module_list,copy.deepcopy(base_model))
 
             # perform LoRAHub learning
             module_weights, model, tokenizer = lorahub_learning(lora_module_list=lora_module_list,
                                                                 example_inputs=example_inputs,
                                                                 example_outputs=examples_outputs,
                                                                 max_inference_step=40,
-                                                                batch_size=5,model = model, tokenizer = tokenizer, cache = lora_cache)
+                                                                batch_size=16,model = model, tokenizer = tokenizer, cache = lora_cache)
 
             print("module_weights:", module_weights)
 
@@ -108,7 +114,13 @@ def evaluate_lorahub_zo_results_few_shot(folder, flan_model_name,args):
     sub_dirs = os.listdir(folder)
     base_model, tokenizer , _ = init_global_model_and_lora(model_name = flan_model_name)
     # 5 seeds used in our experiments
+    i = 0
     for sub_dir in sub_dirs:
+        i+=1
+        if i<=24:
+            continue
+        # if i>24:
+        #     continue
         # construct the few-shot examples for lorahub learning
         example_inputs, examples_outputs = [], []
         example_file_path = os.path.join(folder, sub_dir, "example.jsonl")
@@ -136,19 +148,21 @@ def evaluate_lorahub_zo_results_few_shot(folder, flan_model_name,args):
         task_perf_list = []
         for seed in range(1, 6):
             random.seed(seed)
-
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
             def get_lora_module_list():
                 return random.sample(LORA_MODULE_NAMES, 20)
             # get a list of modules to be used in the composition
             lora_module_list = get_lora_module_list()
-            model,lora_cache = get_lora_cache(lora_module_list,base_model)
+            model, lora_cache = get_lora_cache(lora_module_list,copy.deepcopy(base_model))
 
             # perform LoRAHub learning
             module_weights, model, tokenizer = lorahub_zolearning(lora_module_list=lora_module_list,
                                                                 example_inputs=example_inputs,
                                                                 example_outputs=examples_outputs,
-                                                                max_inference_step=40,
-                                                                batch_size=5,args = args,model = model, tokenizer = tokenizer, cache = lora_cache)
+                                                                max_inference_step=40,seed = seed,
+                                                                batch_size=16,args = args,model = model, tokenizer = tokenizer, cache = lora_cache)
 
             print("module_weights:", module_weights)
 
@@ -158,7 +172,7 @@ def evaluate_lorahub_zo_results_few_shot(folder, flan_model_name,args):
             _, task_acc = lorahub_inference(example_inputs=task_inputs,
                                             model_or_name_path=model,
                                             tokenizer_or_tokenizer_path=tokenizer,
-                                            batch_size=10,
+                                            batch_size=16,
                                             # can set as None if you do not have the ground truth
                                             example_outputs=task_outputs)
             task_perf_list.append(task_acc)

@@ -1,7 +1,9 @@
 from lorahub.algorithm import lorahub_learning, lorahub_inference,lorahub_zolearning,init_global_model_and_lora
 from lorahub.constant import LORA_MODULE_NAMES
 import random
-
+import numpy as np
+import torch
+import copy
 
 def get_examples_for_learning():
     """
@@ -259,6 +261,93 @@ def main():
     print("example_predictions:", example_predictions)
     print("task accuracy:", perf)
 
+def main2():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--method", type=str, required=True,
+                        choices=["baseline", "momentum","adam"])
+    parser.add_argument("--eps", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--q", type=int, default=5)
+    parser.add_argument("--steps", type=int, default=40)
+    parser.add_argument("--beta", type=float, default=0.9)
+    parser.add_argument("--beta1", type=float, default=0.9)
+    parser.add_argument("--beta2", type=float, default=0.999)
+    parser.add_argument("--adam_eps", type=float, default=1e-8)
+    parser.add_argument("--init_scale", type=float, default=0.1)
+    parser.add_argument("--clip_value", type=float, default=1.5)
+    args = parser.parse_args()
+    print("="*30)
+    print("Experiment Config:")
+    for k, v in vars(args).items():
+        print(f"{k}: {v}")
+    print("="*30)
+    """
+    Perform lorahub learning
+    """
+    seeds = [0,1,2,3,42]
+    all_acc = []
+    # get a list of modules to be used in the composition
+    for seed in seeds:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        modules = get_lora_module_list()
+        print("modules:", modules)
 
+        # construct input list and output list
+        example_inputs, examples_outputs = [], []
+        for example in get_examples_for_learning():
+            example_inputs.append(example["input"])
+            examples_outputs.append(example["output"])
+
+        # perform LoRAHub learning or zolearning
+        model, tokenizer , cache = init_global_model_and_lora(modules)
+        if args.method =="baseline":
+            module_weights, model, tokenizer = lorahub_learning(lora_module_list=modules,
+                                                        example_inputs=example_inputs,
+                                                        example_outputs=examples_outputs,
+                                                        max_inference_step=args.steps,
+                                                        batch_size=16,model = model, tokenizer = tokenizer, cache = cache)
+        else:
+            module_weights, model, tokenizer = lorahub_zolearning(lora_module_list=modules,
+                                                        example_inputs=example_inputs,
+                                                        example_outputs=examples_outputs,
+                                                        max_inference_step=args.steps,
+                                                        batch_size=16,seed = seed,
+                                                        args=args,model = model, tokenizer = tokenizer, cache = cache)
+    
+        print("module_weights:", module_weights)
+
+        """
+        Perform inference to get predictions
+        """
+        # now you can use the model to perform inference
+        example_inputs, examples_outputs = [], []
+        for example in get_examples_for_inference():
+            example_inputs.append(example["input"])
+            examples_outputs.append(example["output"])
+
+        example_predictions, perf = lorahub_inference(example_inputs=example_inputs,
+                                                  model_or_name_path=model,
+                                                  tokenizer_or_tokenizer_path=tokenizer,
+                                                  batch_size=10,
+                                                  # can set as None if you do not have the ground truth
+                                                  example_outputs=examples_outputs)
+        print("example_predictions:", example_predictions)
+        print("task accuracy:", perf)
+        all_acc.append(perf)
+    
+    mean_acc = np.mean(all_acc)
+    std_acc = np.std(all_acc)
+
+    print("\n" + "="*30)
+    print("FINAL RESULT (multi-seed)")
+    print(f"seeds: {seeds}")
+    print(f"mean accuracy: {mean_acc:.4f}")
+    print(f"std accuracy:  {std_acc:.4f}")
+    print(f"all acc: {all_acc}")
+    print("="*30)
+    
 if __name__ == "__main__":
-    main()
+    main2()

@@ -48,7 +48,7 @@ def get_lora_cache(lora_module_list,base_model):
     for lora in lora_module_list:
             print(f"Loading {lora}")
             peft_model = PeftModel.from_pretrained(base_model, lora)
-            lora_cache[lora] = get_peft_model_state_dict(peft_model)
+            lora_cache[lora] = copy.deepcopy(get_peft_model_state_dict(peft_model))
 
             # 初始化一个带 LoRA 结构的模型（只用第一个）
     model = PeftModel.from_pretrained(base_model, lora_module_list[0]).to(device)
@@ -511,7 +511,7 @@ def zo_optimize_adam(
         v_hat = v / (1 - beta2 ** step)
 
         weights -= lr * m_hat / (np.sqrt(v_hat) + adam_eps)
-        weights = np.clip(weights, -clip_value, clip_value)
+        # weights = np.clip(weights, -clip_value, clip_value)
 
         loss_now = get_score(weights)
         print(f"[ZO-Adam] step={step}, loss={loss_now:.6f}")
