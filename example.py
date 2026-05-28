@@ -4,6 +4,11 @@ import random
 import numpy as np
 import torch
 import copy
+from peft.utils.save_and_load import set_peft_model_state_dict, get_peft_model_state_dict
+from peft import PeftModel, PeftConfig
+from transformers import AutoModelForSeq2SeqLM
+from transformers import default_data_collator
+from transformers import AutoTokenizer
 
 def get_examples_for_learning():
     """
@@ -260,7 +265,6 @@ def main():
                                                   example_outputs=examples_outputs)
     print("example_predictions:", example_predictions)
     print("task accuracy:", perf)
-
 def main2():
     parser = argparse.ArgumentParser()
     parser.add_argument("--method", type=str, required=True,
@@ -300,7 +304,10 @@ def main2():
         for example in get_examples_for_learning():
             example_inputs.append(example["input"])
             examples_outputs.append(example["output"])
-
+        example_inputs2, examples_outputs2 = [], []
+        for example in get_examples_for_inference():
+            example_inputs2.append(example["input"])
+            examples_outputs2.append(example["output"])
         # perform LoRAHub learning or zolearning
         model, tokenizer , cache = init_global_model_and_lora(modules)
         if args.method =="baseline":
@@ -315,7 +322,7 @@ def main2():
                                                         example_outputs=examples_outputs,
                                                         max_inference_step=args.steps,
                                                         batch_size=16,seed = seed,
-                                                        args=args,model = model, tokenizer = tokenizer, cache = cache)
+                                                        args=args,model = model, tokenizer = tokenizer, cache = cache,example_inputs2 = example_inputs2,examples_outputs2=examples_outputs2)
     
         print("module_weights:", module_weights)
 
@@ -323,17 +330,14 @@ def main2():
         Perform inference to get predictions
         """
         # now you can use the model to perform inference
-        example_inputs, examples_outputs = [], []
-        for example in get_examples_for_inference():
-            example_inputs.append(example["input"])
-            examples_outputs.append(example["output"])
+    
 
-        example_predictions, perf = lorahub_inference(example_inputs=example_inputs,
+        example_predictions, perf = lorahub_inference(example_inputs=example_inputs2,
                                                   model_or_name_path=model,
                                                   tokenizer_or_tokenizer_path=tokenizer,
                                                   batch_size=10,
                                                   # can set as None if you do not have the ground truth
-                                                  example_outputs=examples_outputs)
+                                                  example_outputs=examples_outputs2)
         print("example_predictions:", example_predictions)
         print("task accuracy:", perf)
         all_acc.append(perf)
@@ -348,6 +352,33 @@ def main2():
     print(f"std accuracy:  {std_acc:.4f}")
     print(f"all acc: {all_acc}")
     print("="*30)
+
+def main3():
+    # modules = get_lora_module_list(model_name = "google/flan-t5-large")
+    # print("modules:", modules)
+    # perform LoRAHub learning or zolearning
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    base_model, tokenizer , _ = init_global_model_and_lora(model_name = "google/flan-t5-large")
+    example_inputs, examples_outputs = [], []
+    for example in get_examples_for_inference():
+        example_inputs.append(example["input"])
+        examples_outputs.append(example["output"])
+    acc_list = []
+    for lora in LORA_MODULE_NAMES:
+        
+        model = PeftModel.from_pretrained(base_model, lora).to(device)
+        model.eval()
+        example_predictions, perf = lorahub_inference(example_inputs=example_inputs,
+                                                  model_or_name_path=model,
+                                                  tokenizer_or_tokenizer_path=tokenizer,
+                                                  batch_size=10,
+                                                  # can set as None if you do not have the ground truth
+                                                  example_outputs=examples_outputs)
+        
+        print("example_predictions:", example_predictions)
+        print("lora_name:",lora,"task accuracy:", perf)
+        acc_list.append(perf)
+    print("best acc:",max(acc_list));
     
 if __name__ == "__main__":
     main2()

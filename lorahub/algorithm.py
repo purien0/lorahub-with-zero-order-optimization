@@ -449,6 +449,7 @@ def zo_optimize_momentum(
     beta2 = 0.99,
     init_scale=0.1,
     clip_value=1.5,
+    
 ):
     import numpy as np
 
@@ -471,12 +472,16 @@ def zo_optimize_momentum(
 
         loss_now = get_score(weights)
         print(f"[ZO-Momentum] step={step}, loss={loss_now:.6f}")
+        
+        
+        
 
     return weights
 
 
 def zo_optimize_adam(
     get_score,
+    lora_module_list, cache,model,tokenizer,example_inputs2,examples_outputs2,
     dim,
     steps=100,
     eps=0.05,
@@ -486,7 +491,7 @@ def zo_optimize_adam(
     beta2=0.999,
     adam_eps=1e-8,
     init_scale=0.1,
-    clip_value=1.5,
+    clip_value=1.5
 ):
     import numpy as np
 
@@ -514,7 +519,19 @@ def zo_optimize_adam(
         # weights = np.clip(weights, -clip_value, clip_value)
 
         loss_now = get_score(weights)
-        print(f"[ZO-Adam] step={step}, loss={loss_now:.6f}")
+        # print(f"[ZO-Adam] step={step}, loss={loss_now:.6f}")
+        
+        # lora_module_list, cache,model,tokenizer,example_inputs2,examples_outputs2
+        final_lora = get_final_weights(weights, lora_module_list, cache)
+        set_peft_model_state_dict(model, final_lora)
+        _, perf = lorahub_inference(example_inputs=example_inputs2,
+                                                  model_or_name_path=model,
+                                                  tokenizer_or_tokenizer_path=tokenizer,
+                                                  batch_size=10,
+                                                  # can set as None if you do not have the ground truth
+                                                  example_outputs=examples_outputs2)
+        # print("example_predictions:", example_predictions)
+        print(f"[ZO-Adam] step={step}, loss={loss_now:.6f},accuracy:{perf:.6f}")
 
     return weights
 
@@ -530,7 +547,7 @@ def lorahub_zolearning(
     get_regular=default_l1_regularization,
     seed=42,
     args=None,
-    method="base",model = None, tokenizer = None, cache = None
+    method="base",model = None, tokenizer = None, cache = None,example_inputs2 = None,examples_outputs2=None,
 ):
     if args is not None:
         method = args.method
@@ -565,8 +582,10 @@ def lorahub_zolearning(
         kwargs = filter_kwargs_for_func(zo_optimize_adam, zo_kwargs)
         weights = zo_optimize_adam(
             get_score_partial,
+            lora_module_list, cache,model,tokenizer,example_inputs2,examples_outputs2,
             dim=number_of_loras,
-            **kwargs,
+            
+            **kwargs
         )
     elif method == "momentum":
         kwargs = filter_kwargs_for_func(zo_optimize_momentum, zo_kwargs)

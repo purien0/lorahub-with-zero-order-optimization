@@ -9,6 +9,11 @@ import argparse
 import copy
 import numpy as np
 import torch
+from peft.utils.save_and_load import set_peft_model_state_dict, get_peft_model_state_dict
+from peft import PeftModel, PeftConfig
+from transformers import AutoModelForSeq2SeqLM
+from transformers import default_data_collator
+from transformers import AutoTokenizer
 
 def evaluate_flan_results_zero_shot(folder, flan_model_name):
     sub_dirs = os.listdir(folder)
@@ -179,6 +184,61 @@ def evaluate_lorahub_zo_results_few_shot(folder, flan_model_name,args):
         avg_perf, max_perf = sum(task_perf_list) / len(task_perf_list), max(task_perf_list)
         print("average perf:", avg_perf, "best perf:", max_perf)
 
+def evaluate_single_lora(folder, flan_model_name):
+    sub_dirs = sorted(os.listdir(folder))
+    base_model, tokenizer , _ = init_global_model_and_lora(model_name = flan_model_name)
+    i = 0
+    # 5 seeds used in our experiments
+    print(sub_dirs)
+    for sub_dir in sub_dirs:
+        i+=1
+        if i<=14:
+            continue
+        # construct the few-shot examples for lorahub learning
+        example_inputs, examples_outputs = [], []
+        example_file_path = os.path.join(folder, sub_dir, "example.jsonl")
+        for line in open(example_file_path, "r", encoding="utf-8"):
+            example = json.loads(line)
+            example_inputs.append(example["context"])
+            examples_outputs.append(example["completion"])
+            
+        # random select 5 examples for each task
+        random.seed(42)
+        shuffled_set = list(zip(example_inputs, examples_outputs))
+        random.shuffle(shuffled_set)
+        example_inputs, examples_outputs = zip(*shuffled_set)
+        # take the first 5 examples
+        example_inputs, examples_outputs = example_inputs[:5], examples_outputs[:5]
+
+        # load the zero-shot examples for evaluation
+        test_file_path = os.path.join(folder, sub_dir, "zero_shot.jsonl")
+        task_inputs, task_outputs = [], []
+        for line in open(test_file_path, "r", encoding="utf-8"):
+            example = json.loads(line)
+            task_inputs.append(example["context"])
+            task_outputs.append(example["completion"])
+        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    
+        task_perf_list = []
+        lora_module_list = LORA_MODULE_NAMES
+        for lora in lora_module_list:
+            """
+            Perform inference to get predictions
+            """
+            model = PeftModel.from_pretrained(base_model, lora).to(device)
+            model.eval()
+            _, task_acc = lorahub_inference(example_inputs=task_inputs,
+                                            model_or_name_path=model,
+                                            tokenizer_or_tokenizer_path=tokenizer,
+                                            batch_size=10,
+                                            # can set as None if you do not have the ground truth
+                                            example_outputs=task_outputs)
+            print("task:",sub_dir,"lora_name:",lora,"lora_acc:",task_acc)
+            task_perf_list.append(task_acc)
+        avg_perf, max_perf = sum(task_perf_list) / len(task_perf_list), max(task_perf_list)
+        print("average perf:", avg_perf, "best perf:", max_perf)
+    
 if __name__ == "__main__":
     if not os.path.exists("data_bbh"):
         # download dataset
@@ -217,4 +277,6 @@ if __name__ == "__main__":
         print(f"{k}: {v}")
     print("="*30)
 
-    evaluate_lorahub_zo_results_few_shot("data_bbh", "google/flan-t5-large",args)
+    # evaluate_lorahub_zo_results_few_shot("data_bbh", "google/flan-t5-large",args)
+    evaluate_single_lora("data_bbh", "google/flan-t5-large")
+    

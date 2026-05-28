@@ -1,0 +1,33 @@
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - torch
+      - accelerate==1.0.1
+      - transformers==4.46.3
+      - datasets==3.1.0
+      - evaluate==0.4.6
+      - peft==0.13.2
+      - sentencepiece==0.2.0
+      - tokenizers==0.20.3
+
+      # 数据处理
+      - numpy==1.24.4
+      - pandas==2.0.3
+      - scipy==1.10.1
+      - scikit-learn==1.3.2
+
+      # 优化相关
+      - nevergrad==1.0.12
+      - bayesian-optimization==1.4.0
+      - cma==4.4.4
+      - directsearch==1.0
+
+      # 工具库
+      - tqdm==4.67.3
+      - pyyaml==6.0.3
+      - requests==2.32.4
+      - filelock==3.16.1
+      - packaging==26.1

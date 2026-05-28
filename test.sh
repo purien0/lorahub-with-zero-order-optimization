@@ -18,11 +18,11 @@ run_experiment() {
 # run_experiment momentum_default --method momentum --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta 0.9
 # run_experiment adam_default --method adam --steps 40 --eps 0.05 --lr 0.1 --q 5 --beta1 0.9 --beta2 0.999 --adam_eps 1e-8
 #0.01和0.1被kill了
-EPS_LIST=(0.05 0.1)
+EPS_LIST=(0.01)
 LR_LIST=(0.1)
-Q_LIST=(1)
+Q_LIST=(20)
 # TIMES=(1,2,3)
-STEPS=(40 80)
+STEPS=(40)
 METHOD="adam"
 MAX_JOBS=2 
 job_count=0
@@ -33,7 +33,7 @@ for eps in "${EPS_LIST[@]}"; do
     for q in "${Q_LIST[@]}"; do
     for s in "${STEPS[@]}"; do
 
-          name="multiseed_step${s}_eps${eps}_lr${lr}_q${q}"
+          name="everylora_${s}_eps${eps}_lr${lr}_q${q}"
 
           run_experiment "$name" \
             --method ${METHOD} \
